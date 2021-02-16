@@ -18,7 +18,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
-        
+        self.view.backgroundColor = UIColor.white
         example(of: "just, of, from") {
            // 1
             let one = 1
@@ -354,6 +354,310 @@ class ViewController: UIViewController {
              */
             print(relay.value)
         }
+        
+        example(of: "ignoreElements") {
+        // 1
+        let strikes = PublishSubject<String>()
+        let disposeBag = DisposeBag()
+        // 2
+         strikes
+         .ignoreElements()
+         .subscribe { _ in
+            print("You're out!")
+         }
+         .disposed(by: disposeBag)
+            strikes.onNext("X")
+            strikes.onNext("X")
+            strikes.onNext("X")
+            strikes.onCompleted()
+            //可能会注意到ignoreElements实际上返回了Completable，这很有意义，因为它只会发出完成事件或错误事件。
+           
+        }
+        example(of: "elementAt") {
+        //有时您可能只想处理可观察对象发出的第n个（常规）元素，例如第三次罢工。 为此，可以使用elementAt，它获取要接收的元素的索引，而忽略其他所有内容。 在大理石图中，elementAt传递的索引为2，因此它仅允许通过第三个元素
+        // 1
+        let strikes = PublishSubject<String>()
+        let disposeBag = DisposeBag()
+        // 2
+         strikes
+         .elementAt(2)
+         .subscribe(onNext: { _ in
+        print("You're out!")
+         })
+         .disposed(by: disposeBag)
+            strikes.onNext("X")
+            strikes.onNext("X")
+            strikes.onNext("X")
+        }
+        
+        example(of: "filter") {
+        /*
+           1.创建一个可观察值的一些预定义整数。
+           2.使用filter运算符可以应用条件约束，以防止奇数通过。
+           3.您订阅并打印出通过过滤谓词的元素。
+            应用此过滤器的结果是仅打印偶数：
+        */
+        let disposeBag = DisposeBag()
+        // 1
+        Observable.of(1, 2, 3, 4, 5, 6)
+        // 2
+         .filter { $0.isMultiple(of: 2) }
+        // 3
+         .subscribe(onNext: {
+        print($0)
+         })
+         .disposed(by: disposeBag)
+        }
+        
+        example(of: "skip") {
+            /*
+             1.创建一个可观察的字母。
+             2.使用跳过跳过前三个元素并订阅下一个事件。
+                跳过前三个元素后，仅打印D，E和F
+             */
+        let disposeBag = DisposeBag()
+        // 1
+        Observable.of("A", "B", "C", "D", "E", "F")
+        // 2
+         .skip(3)
+         .subscribe(onNext: {
+        print($0)
+         })
+         .disposed(by: disposeBag)
+        }
+        
+        example(of: "skipWhile") {
+        /*
+          1.创建一个可观察的整数。
+          2.将skipWhile与断言一起使用，该断言会跳过元素，直到发出奇数整数为止
+        */
+        let disposeBag = DisposeBag()
+        // 1
+        Observable.of(2, 2, 3, 4, 4)
+        // 2
+         .skipWhile { $0.isMultiple(of: 2) }
+         .subscribe(onNext: {
+        print($0)
+         })
+         .disposed(by: disposeBag)
+        }
+        
+        example(of: "skipUntil") {
+            
+        /*
+          1.创建一个主题以对要使用的数据进行建模，并创建另一个主题作为触发器。
+          2.使用skipUntil并传递触发主题。 当触发器发出时，skipUntil停止跳过
+         */
+        let disposeBag = DisposeBag()
+        // 1
+        let subject = PublishSubject<String>()
+        let trigger = PublishSubject<String>()
+        // 2
+         subject
+         .skipUntil(trigger)
+         .subscribe(onNext: {
+           print($0)
+         })
+         .disposed(by: disposeBag)
+            subject.onNext("A")
+            subject.onNext("B")
+            //由于您正在跳过，因此未打印任何内容。 现在将新的下一个事件添加到触发器
+            trigger.onNext("X")
+            //这将导致skipUntil停止跳过。 从这一点开始，所有元素都被允许通过。 在主题上添加另一个下一个事件
+            subject.onNext("C")
+            
+        }
+        
+        example(of: "take") {
+            //1.创建一个可观察的整数。
+            //2.使用take获取前3个元素
+        let disposeBag = DisposeBag()
+        // 1
+        Observable.of(1, 2, 3, 4, 5, 6)
+        // 2
+         .take(3)
+         .subscribe(onNext: {
+        print($0)
+         })
+         .disposed(by: disposeBag)
+        }
+        
+        
+        example(of: "takeWhile") {
+            /*
+               1.创建一个可观察的整数。
+                2.使用枚举运算符获取包含发出的每个元素的索引和值的元组。
+                3.使用takeWhile运算符，并将元组分解为单个参数。
+                4.传递一个将带元素的谓词，直到条件失败为止。
+                5.使用地图（其工作原理与Swift标准库地图相同）进入到达takeWhile返回的元组并获取元素。
+                6.订阅并打印下一个元素
+             */
+        let disposeBag = DisposeBag()
+        // 1
+        Observable.of(2, 2, 4, 4, 6, 6)
+        // 2
+         .enumerated()
+        // 3
+         .takeWhile { index, integer in
+        // 4
+         integer.isMultiple(of: 2) && index < 3
+         }
+        // 5
+         .map(\.element)
+        // 6
+         .subscribe(onNext: {
+           print($0)
+         })
+         .disposed(by: disposeBag)
+        }
+        
+        example(of: "takeUntil") {
+        /*
+           1.创建一个可观察的连续整数。
+           2.使用具有包含行为的takeUntil运算符。
+           这段代码可以打印出直至通过谓词的元素，包括该谓词
+        */
+        let disposeBag = DisposeBag()
+        // 1
+        Observable.of(1, 2, 3, 4, 5)
+        // 2
+         .takeUntil(.inclusive) { $0.isMultiple(of: 4) }
+         .subscribe(onNext: {
+        print($0)
+         })
+         .disposed(by: disposeBag)
+            //现在，将行为从.inclusive更改为.exclusive，然后再次运行Playground。 这次，排除通过谓词的元素
+            Observable.of(1, 2, 3, 4, 5)
+            // 2
+             .takeUntil(.exclusive) { $0.isMultiple(of: 4) }
+             .subscribe(onNext: {
+            print($0)
+             })
+             .disposed(by: disposeBag)
+        }
+        
+        example(of: "takeUntil trigger") {
+            /*
+             1.创建主要主题和触发主题。
+                2.使用takeUntil，传递将触发takeUntil停止发出的触发器。
+                3.在主题上添加几个元素
+             */
+          let disposeBag = DisposeBag()
+        // 1
+          let subject = PublishSubject<String>()
+          let trigger = PublishSubject<String>()
+        // 2
+         subject
+         .takeUntil(trigger)
+         .subscribe(onNext: {
+            print($0)
+         })
+         .disposed(by: disposeBag)
+        // 3
+         subject.onNext("1")
+         subject.onNext("2")
+            //现在在触发器上添加一个元素，然后在主题上添加另一个元素：
+            //X停止拍摄，因此不允许3通过并且不再打印任何内容。
+            trigger.onNext("X")
+            subject.onNext("3")
+        }
+        
+        example(of: "distinctUntilChanged") {
+            /*
+             使用此代码的操作：1.创建一个可观察的字母。
+                2.使用distinctUntilChanged防止顺序重复项通过。
+             distinctUntilChanged运算符仅防止连续重复，因此第二个A和第二个B与其前一个元素相等，因此被阻止。 但是，允许使用第三个A，因为它不等于其前一个元素
+             */
+        let disposeBag = DisposeBag()
+        // 1
+        Observable.of("A", "A", "B", "B", "A")
+        // 2
+         .distinctUntilChanged()
+         .subscribe(onNext: {
+        print($0)
+         })
+         .disposed(by: disposeBag)
+        }
+        
+        example(of: "distinctUntilChanged(_:)") {
+            /*
+             1.创建一个数字格式化程序以拼出每个数字。
+                2.创建一个可观察的NSNumbers而不是Ints，这样在接下来使用格式化程序时不必转换整数。
+                3.使用distinctUntilChanged（_ :)，它采用一个谓词闭包来接收每个顺序的元素对。
+                4.使用guard来有条件地绑定用空格隔开的元素组件，否则返回false。
+                5.迭代第一个数组中的每个单词，然后查看它是否包含在第二个数组中。
+                6.根据您提供的比较逻辑，订阅并打印出被认为是不同的元素。
+                结果，仅打印出不同的整数，并考虑到在每对整数中，一个不包含另一个整数
+             */
+            //当您要明确防止不符合Equatable的类型重复时，distinctUntilChanged（_ :)运算符也很有用
+            let disposeBag = DisposeBag()
+            // 1
+            let formatter = NumberFormatter()
+             formatter.numberStyle = .spellOut
+            // 2
+            Observable<NSNumber>.of(10, 110, 20, 200, 210, 310)
+            // 3
+             .distinctUntilChanged { a, b in
+            // 4
+            guard
+            let aWords = formatter
+             .string(from: a)?
+             .components(separatedBy: " "),
+            let bWords = formatter
+             .string(from: b)?
+             .components(separatedBy: " ")
+             else {
+             return false
+             }
+            var containsMatch = false
+            // 5
+                for aWord in aWords where bWords.contains(aWord) {
+                 containsMatch = true
+                break
+                 }
+                return containsMatch
+                 }
+                // 4
+                 .subscribe(onNext: {
+                print($0)
+                 })
+                 .disposed(by: disposeBag)
+        }
+        
+        //Sharing subscriptions
+        
+        var start = 0
+        func getStartNumber() -> Int {
+         start += 1
+        return start
+        }
+        let numbers = Observable<Int>.create { observer in
+        let start = getStartNumber()
+         observer.onNext(start)
+         observer.onNext(start+1)
+         observer.onNext(start+2)
+         observer.onCompleted()
+        return Disposables.create()
+        }
+        numbers
+         .subscribe(
+         onNext: { el in
+        print("element [\(el)]")
+         },
+         onCompleted: {
+        print("-------------")
+         }
+         )
+        numbers
+         .subscribe(
+         onNext: { el in
+        print("element [\(el)]")
+         },
+         onCompleted: {
+        print("-------------")
+         }
+         )
+        
         
     }
     public func example(of description: String, action: () -> Void)

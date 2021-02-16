@@ -7,13 +7,34 @@
 
 import UIKit
 
+
+
+
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
-
+    var window : UIWindow?
+    var navi :UINavigationController?
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        /*
+        let FilteringOperatorVc = FilteringOperatorsViewController.init()
+    
+        self.window = UIWindow.init(frame: UIScreen.main.bounds)
+        self.window?.backgroundColor = UIColor.white
+        self.navi = UINavigationController.init(rootViewController: FilteringOperatorVc)
+        self.window?.rootViewController = navi
+        
+        self.window?.makeKeyAndVisible()
+        
+        */
+        
+        
+        
+        
+        
         return true
     }
 
